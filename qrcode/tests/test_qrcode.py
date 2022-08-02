@@ -88,7 +88,7 @@ class QRCodeTests(unittest.TestCase):
 
     def test_mode_8bit(self):
         qr = qrcode.QRCode()
-        qr.add_data(u'abcABC' + UNICODE_TEXT, optimize=0)
+        qr.add_data(f'abcABC{UNICODE_TEXT}', optimize=0)
         qr.make()
         self.assertEqual(qr.version, 1)
         self.assertEqual(qr.data_list[0].mode, MODE_8BIT_BYTE)
@@ -306,7 +306,7 @@ class QRCodeTests(unittest.TestCase):
         f.close()
         BOLD_WHITE_BG = '\x1b[1;47m'
         BLACK_BG = '\x1b[40m'
-        WHITE_BLOCK = BOLD_WHITE_BG + '  ' + BLACK_BG
+        WHITE_BLOCK = f'{BOLD_WHITE_BG}  {BLACK_BG}'
         EOL = '\x1b[0m\n'
         expected = (
             BOLD_WHITE_BG + '  '*23 + EOL +
