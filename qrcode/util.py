@@ -129,26 +129,26 @@ def pattern_position(version):
 
 
 def mask_func(pattern):
-    """
+        """
     Return the mask function for the given mask pattern.
     """
-    if pattern == 0:   # 000
-        return lambda i, j: (i + j) % 2 == 0
-    if pattern == 1:   # 001
-        return lambda i, j: i % 2 == 0
-    if pattern == 2:   # 010
-        return lambda i, j: j % 3 == 0
-    if pattern == 3:   # 011
-        return lambda i, j: (i + j) % 3 == 0
-    if pattern == 4:   # 100
-        return lambda i, j: (math.floor(i / 2) + math.floor(j / 3)) % 2 == 0
-    if pattern == 5:  # 101
-        return lambda i, j: (i * j) % 2 + (i * j) % 3 == 0
-    if pattern == 6:  # 110
-        return lambda i, j: ((i * j) % 2 + (i * j) % 3) % 2 == 0
-    if pattern == 7:  # 111
-        return lambda i, j: ((i * j) % 3 + (i + j) % 2) % 2 == 0
-    raise TypeError("Bad mask pattern: " + pattern)  # pragma: no cover
+        if pattern == 0:   # 000
+            return lambda i, j: (i + j) % 2 == 0
+        if pattern == 1:   # 001
+            return lambda i, j: i % 2 == 0
+        if pattern == 2:   # 010
+            return lambda i, j: j % 3 == 0
+        if pattern == 3:   # 011
+            return lambda i, j: (i + j) % 3 == 0
+        if pattern == 4:   # 100
+            return lambda i, j: (math.floor(i / 2) + math.floor(j / 3)) % 2 == 0
+        if pattern == 5:  # 101
+            return lambda i, j: (i * j) % 2 + (i * j) % 3 == 0
+        if pattern == 6:  # 110
+            return lambda i, j: ((i * j) % 2 + (i * j) % 3) % 2 == 0
+        if pattern == 7:  # 111
+            return lambda i, j: ((i * j) % 3 + (i + j) % 2) % 2 == 0
+        raise TypeError(f"Bad mask pattern: {pattern}")
 
 
 def mode_sizes_for_version(version):
@@ -161,19 +161,18 @@ def mode_sizes_for_version(version):
 
 
 def length_in_bits(mode, version):
-    if mode not in (
+        if mode not in (
             MODE_NUMBER, MODE_ALPHA_NUM, MODE_8BIT_BYTE, MODE_KANJI):
-        raise TypeError("Invalid mode (%s)" % mode)  # pragma: no cover
+                raise TypeError(f"Invalid mode ({mode})")
 
-    check_version(version)
+        check_version(version)
 
-    return mode_sizes_for_version(version)[mode]
+        return mode_sizes_for_version(version)[mode]
 
 
 def check_version(version):
-    if version < 1 or version > 40:
-        raise ValueError(
-            "Invalid version (was %s, expected 1 to 40)" % version)
+        if version < 1 or version > 40:
+                raise ValueError(f"Invalid version (was {version}, expected 1 to 40)")
 
 
 def lost_point(modules):
@@ -231,30 +230,29 @@ def _lost_point_level1(modules, modules_count):
 
 
 def _lost_point_level2(modules, modules_count):
-    lost_point = 0
+        lost_point = 0
 
-    modules_range = xrange(modules_count - 1)
-    for row in modules_range:
-        this_row = modules[row]
-        next_row = modules[row + 1]
-        # use iter() and next() to skip next four-block. e.g.
-        # d a f   if top-right a != b botton-right,
-        # c b e   then both abcd and abef won't lost any point.
-        modules_range_iter = iter(modules_range)
-        for col in modules_range_iter:
-            top_right = this_row[col + 1]
-            if top_right != next_row[col + 1]:
-                # reduce 33.3% of runtime via next().
-                # None: raise nothing if there is no next item.
-                next(modules_range_iter, None)
-            elif top_right != this_row[col]:
-                continue
-            elif top_right != next_row[col]:
-                continue
-            else:
-                lost_point += 3
+        modules_range = xrange(modules_count - 1)
+        for row in modules_range:
+                this_row = modules[row]
+                next_row = modules[row + 1]
+                # use iter() and next() to skip next four-block. e.g.
+                # d a f   if top-right a != b botton-right,
+                # c b e   then both abcd and abef won't lost any point.
+                modules_range_iter = iter(modules_range)
+                for col in modules_range_iter:
+                        top_right = this_row[col + 1]
+                        if top_right != next_row[col + 1]:
+                                # reduce 33.3% of runtime via next().
+                                # None: raise nothing if there is no next item.
+                                next(modules_range_iter, None)
+                        elif (top_right != this_row[col]
+                              or top_right != next_row[col]):
+                                continue
+                        else:
+                                lost_point += 3
 
-    return lost_point
+        return lost_point
 
 
 def _lost_point_level3(modules, modules_count):
@@ -342,33 +340,30 @@ def _lost_point_level4(modules, modules_count):
 
 
 def optimal_data_chunks(data, minimum=4):
-    """
+        """
     An iterator returning QRData chunks optimized to the data content.
 
     :param minimum: The minimum number of bytes in a row to split as a chunk.
     """
-    data = to_bytestring(data)
-    num_pattern = six.b(r'\d')
-    alpha_pattern = six.b('[') + re.escape(ALPHA_NUM) + six.b(']')
-    if len(data) <= minimum:
-        num_pattern = re.compile(six.b('^') + num_pattern + six.b('+$'))
-        alpha_pattern = re.compile(six.b('^') + alpha_pattern + six.b('+$'))
-    else:
-        re_repeat = (
-            six.b('{') + six.text_type(minimum).encode('ascii') + six.b(',}'))
-        num_pattern = re.compile(num_pattern + re_repeat)
-        alpha_pattern = re.compile(alpha_pattern + re_repeat)
-    num_bits = _optimal_split(data, num_pattern)
-    for is_num, chunk in num_bits:
-        if is_num:
-            yield QRData(chunk, mode=MODE_NUMBER, check_data=False)
+        data = to_bytestring(data)
+        num_pattern = six.b(r'\d')
+        alpha_pattern = six.b('[') + re.escape(ALPHA_NUM) + six.b(']')
+        if len(data) <= minimum:
+            num_pattern = re.compile(six.b('^') + num_pattern + six.b('+$'))
+            alpha_pattern = re.compile(six.b('^') + alpha_pattern + six.b('+$'))
         else:
-            for is_alpha, sub_chunk in _optimal_split(chunk, alpha_pattern):
-                if is_alpha:
-                    mode = MODE_ALPHA_NUM
+            re_repeat = (
+                six.b('{') + six.text_type(minimum).encode('ascii') + six.b(',}'))
+            num_pattern = re.compile(num_pattern + re_repeat)
+            alpha_pattern = re.compile(alpha_pattern + re_repeat)
+        num_bits = _optimal_split(data, num_pattern)
+        for is_num, chunk in num_bits:
+                if is_num:
+                        yield QRData(chunk, mode=MODE_NUMBER, check_data=False)
                 else:
-                    mode = MODE_8BIT_BYTE
-                yield QRData(sub_chunk, mode=mode, check_data=False)
+                        for is_alpha, sub_chunk in _optimal_split(chunk, alpha_pattern):
+                                mode = MODE_ALPHA_NUM if is_alpha else MODE_8BIT_BYTE
+                                yield QRData(sub_chunk, mode=mode, check_data=False)
 
 
 def _optimal_split(data, pattern):
@@ -396,14 +391,12 @@ def to_bytestring(data):
 
 
 def optimal_mode(data):
-    """
+        """
     Calculate the optimal mode for this chunk of data.
     """
-    if data.isdigit():
-        return MODE_NUMBER
-    if RE_ALPHA_NUM.match(data):
-        return MODE_ALPHA_NUM
-    return MODE_8BIT_BYTE
+        if data.isdigit():
+            return MODE_NUMBER
+        return MODE_ALPHA_NUM if RE_ALPHA_NUM.match(data) else MODE_8BIT_BYTE
 
 
 class QRData(object):
@@ -414,53 +407,48 @@ class QRData(object):
     """
 
     def __init__(self, data, mode=None, check_data=True):
-        """
+            """
         If ``mode`` isn't provided, the most compact QR data type possible is
         chosen.
         """
-        if check_data:
-            data = to_bytestring(data)
+            if check_data:
+                data = to_bytestring(data)
 
-        if mode is None:
-            self.mode = optimal_mode(data)
-        else:
-            self.mode = mode
-            if mode not in (MODE_NUMBER, MODE_ALPHA_NUM, MODE_8BIT_BYTE):
-                raise TypeError("Invalid mode (%s)" % mode)  # pragma: no cover
-            if check_data and mode < optimal_mode(data):  # pragma: no cover
-                raise ValueError(
-                    "Provided data can not be represented in mode "
-                    "{0}".format(mode))
+            if mode is None:
+                    self.mode = optimal_mode(data)
+            else:
+                    self.mode = mode
+                    if mode not in (MODE_NUMBER, MODE_ALPHA_NUM, MODE_8BIT_BYTE):
+                            raise TypeError(f"Invalid mode ({mode})")
+                    if check_data and mode < optimal_mode(data):  # pragma: no cover
+                        raise ValueError(
+                            "Provided data can not be represented in mode "
+                            "{0}".format(mode))
 
-        self.data = data
+            self.data = data
 
     def __len__(self):
         return len(self.data)
 
     def write(self, buffer):
-        if self.mode == MODE_NUMBER:
-            for i in xrange(0, len(self.data), 3):
-                chars = self.data[i:i + 3]
-                bit_length = NUMBER_LENGTH[len(chars)]
-                buffer.put(int(chars), bit_length)
-        elif self.mode == MODE_ALPHA_NUM:
-            for i in xrange(0, len(self.data), 2):
-                chars = self.data[i:i + 2]
-                if len(chars) > 1:
-                    buffer.put(
-                        ALPHA_NUM.find(chars[0]) * 45 +
-                        ALPHA_NUM.find(chars[1]), 11)
-                else:
-                    buffer.put(ALPHA_NUM.find(chars), 6)
-        else:
-            if six.PY3:
-                # Iterating a bytestring in Python 3 returns an integer,
-                # no need to ord().
-                data = self.data
+            if self.mode == MODE_NUMBER:
+                    for i in xrange(0, len(self.data), 3):
+                        chars = self.data[i:i + 3]
+                        bit_length = NUMBER_LENGTH[len(chars)]
+                        buffer.put(int(chars), bit_length)
+            elif self.mode == MODE_ALPHA_NUM:
+                for i in xrange(0, len(self.data), 2):
+                    chars = self.data[i:i + 2]
+                    if len(chars) > 1:
+                        buffer.put(
+                            ALPHA_NUM.find(chars[0]) * 45 +
+                            ALPHA_NUM.find(chars[1]), 11)
+                    else:
+                        buffer.put(ALPHA_NUM.find(chars), 6)
             else:
-                data = [ord(c) for c in self.data]
-            for c in data:
-                buffer.put(c, 8)
+                    data = self.data if six.PY3 else [ord(c) for c in self.data]
+                    for c in data:
+                        buffer.put(c, 8)
 
     def __repr__(self):
         return repr(self.data)
@@ -496,104 +484,92 @@ class BitBuffer(object):
 
 
 def create_bytes(buffer, rs_blocks):
-    offset = 0
+        offset = 0
 
-    maxDcCount = 0
-    maxEcCount = 0
+        maxDcCount = 0
+        maxEcCount = 0
 
-    dcdata = [0] * len(rs_blocks)
-    ecdata = [0] * len(rs_blocks)
+        dcdata = [0] * len(rs_blocks)
+        ecdata = [0] * len(rs_blocks)
 
-    for r in range(len(rs_blocks)):
-
-        dcCount = rs_blocks[r].data_count
-        ecCount = rs_blocks[r].total_count - dcCount
-
-        maxDcCount = max(maxDcCount, dcCount)
-        maxEcCount = max(maxEcCount, ecCount)
-
-        dcdata[r] = [0] * dcCount
-
-        for i in range(len(dcdata[r])):
-            dcdata[r][i] = 0xff & buffer.buffer[i + offset]
-        offset += dcCount
-
-        # Get error correction polynomial.
-        if ecCount in LUT.rsPoly_LUT:
-            rsPoly = base.Polynomial(LUT.rsPoly_LUT[ecCount], 0)
-        else:
-            rsPoly = base.Polynomial([1], 0)
-            for i in range(ecCount):
-                rsPoly = rsPoly * base.Polynomial([1, base.gexp(i)], 0)
-
-        rawPoly = base.Polynomial(dcdata[r], len(rsPoly) - 1)
-
-        modPoly = rawPoly % rsPoly
-        ecdata[r] = [0] * (len(rsPoly) - 1)
-        for i in range(len(ecdata[r])):
-            modIndex = i + len(modPoly) - len(ecdata[r])
-            if (modIndex >= 0):
-                ecdata[r][i] = modPoly[modIndex]
-            else:
-                ecdata[r][i] = 0
-
-    totalCodeCount = 0
-    for rs_block in rs_blocks:
-        totalCodeCount += rs_block.total_count
-
-    data = [None] * totalCodeCount
-    index = 0
-
-    for i in range(maxDcCount):
         for r in range(len(rs_blocks)):
-            if i < len(dcdata[r]):
-                data[index] = dcdata[r][i]
-                index += 1
 
-    for i in range(maxEcCount):
-        for r in range(len(rs_blocks)):
-            if i < len(ecdata[r]):
-                data[index] = ecdata[r][i]
-                index += 1
+                dcCount = rs_blocks[r].data_count
+                ecCount = rs_blocks[r].total_count - dcCount
 
-    return data
+                maxDcCount = max(maxDcCount, dcCount)
+                maxEcCount = max(maxEcCount, ecCount)
+
+                dcdata[r] = [0] * dcCount
+
+                for i in range(len(dcdata[r])):
+                    dcdata[r][i] = 0xff & buffer.buffer[i + offset]
+                offset += dcCount
+
+                # Get error correction polynomial.
+                if ecCount in LUT.rsPoly_LUT:
+                    rsPoly = base.Polynomial(LUT.rsPoly_LUT[ecCount], 0)
+                else:
+                    rsPoly = base.Polynomial([1], 0)
+                    for i in range(ecCount):
+                        rsPoly = rsPoly * base.Polynomial([1, base.gexp(i)], 0)
+
+                rawPoly = base.Polynomial(dcdata[r], len(rsPoly) - 1)
+
+                modPoly = rawPoly % rsPoly
+                ecdata[r] = [0] * (len(rsPoly) - 1)
+                for i in range(len(ecdata[r])):
+                        modIndex = i + len(modPoly) - len(ecdata[r])
+                        ecdata[r][i] = modPoly[modIndex] if (modIndex >= 0) else 0
+        totalCodeCount = sum(rs_block.total_count for rs_block in rs_blocks)
+        data = [None] * totalCodeCount
+        index = 0
+
+        for i in range(maxDcCount):
+            for r in range(len(rs_blocks)):
+                if i < len(dcdata[r]):
+                    data[index] = dcdata[r][i]
+                    index += 1
+
+        for i in range(maxEcCount):
+            for r in range(len(rs_blocks)):
+                if i < len(ecdata[r]):
+                    data[index] = ecdata[r][i]
+                    index += 1
+
+        return data
 
 
 def create_data(version, error_correction, data_list):
 
-    buffer = BitBuffer()
-    for data in data_list:
-        buffer.put(data.mode, 4)
-        buffer.put(len(data), length_in_bits(data.mode, version))
-        data.write(buffer)
+        buffer = BitBuffer()
+        for data in data_list:
+            buffer.put(data.mode, 4)
+            buffer.put(len(data), length_in_bits(data.mode, version))
+            data.write(buffer)
 
-    # Calculate the maximum number of bits for the given version.
-    rs_blocks = base.rs_blocks(version, error_correction)
-    bit_limit = 0
-    for block in rs_blocks:
-        bit_limit += block.data_count * 8
+        # Calculate the maximum number of bits for the given version.
+        rs_blocks = base.rs_blocks(version, error_correction)
+        bit_limit = sum(block.data_count * 8 for block in rs_blocks)
+        if len(buffer) > bit_limit:
+                raise exceptions.DataOverflowError(
+                    f"Code length overflow. Data size ({len(buffer)}) > size available ({bit_limit})"
+                )
 
-    if len(buffer) > bit_limit:
-        raise exceptions.DataOverflowError(
-            "Code length overflow. Data size (%s) > size available (%s)" %
-            (len(buffer), bit_limit))
+            # Terminate the bits (add up to four 0s).
+        for _ in range(min(bit_limit - len(buffer), 4)):
+                buffer.put_bit(False)
 
-    # Terminate the bits (add up to four 0s).
-    for i in range(min(bit_limit - len(buffer), 4)):
-        buffer.put_bit(False)
+        if delimit := len(buffer) % 8:
+                for _ in range(8 - delimit):
+                        buffer.put_bit(False)
 
-    # Delimit the string into 8-bit words, padding with 0s if necessary.
-    delimit = len(buffer) % 8
-    if delimit:
-        for i in range(8 - delimit):
-            buffer.put_bit(False)
+        # Add special alternating padding bitstrings until buffer is full.
+        bytes_to_fill = (bit_limit - len(buffer)) // 8
+        for i in range(bytes_to_fill):
+            if i % 2 == 0:
+                buffer.put(PAD0, 8)
+            else:
+                buffer.put(PAD1, 8)
 
-    # Add special alternating padding bitstrings until buffer is full.
-    bytes_to_fill = (bit_limit - len(buffer)) // 8
-    for i in range(bytes_to_fill):
-        if i % 2 == 0:
-            buffer.put(PAD0, 8)
-        else:
-            buffer.put(PAD1, 8)
-
-    return create_bytes(buffer, rs_blocks)
+        return create_bytes(buffer, rs_blocks)

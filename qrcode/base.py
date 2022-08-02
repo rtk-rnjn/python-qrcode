@@ -274,7 +274,7 @@ RS_BLOCK_TABLE = [
 
 def glog(n):
     if n < 1:  # pragma: no cover
-        raise ValueError("glog(%s)" % n)
+        raise ValueError(f"glog({n})")
     return LOG_TABLE[n]
 
 
@@ -286,7 +286,7 @@ class Polynomial(object):
 
     def __init__(self, num, shift):
         if not num:  # pragma: no cover
-            raise Exception("%s/%s" % (len(num), shift))
+            raise Exception(f"{len(num)}/{shift}")
 
         for offset in range(len(num)):
             if num[offset] != 0:
@@ -341,8 +341,9 @@ class RSBlock(object):
 def rs_blocks(version, error_correction):
     if error_correction not in RS_BLOCK_OFFSET:  # pragma: no cover
         raise Exception(
-            "bad rs block @ version: %s / error_correction: %s" %
-            (version, error_correction))
+            f"bad rs block @ version: {version} / error_correction: {error_correction}"
+        )
+
     offset = RS_BLOCK_OFFSET[error_correction]
     rs_block = RS_BLOCK_TABLE[(version - 1) * 4 + offset]
 
@@ -350,7 +351,5 @@ def rs_blocks(version, error_correction):
 
     for i in range(0, len(rs_block), 3):
         count, total_count, data_count = rs_block[i:i + 3]
-        for j in range(count):
-            blocks.append(RSBlock(total_count, data_count))
-
+        blocks.extend(RSBlock(total_count, data_count) for _ in range(count))
     return blocks

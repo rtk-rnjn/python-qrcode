@@ -59,6 +59,5 @@ class BaseImage(object):
             if not allowed:
                 allowed = kind in self.allowed_kinds
         if not allowed:
-            raise ValueError(
-                "Cannot set %s type to %s" % (type(self).__name__, kind))
+            raise ValueError(f"Cannot set {type(self).__name__} type to {kind}")
         return kind

@@ -33,9 +33,7 @@ class SvgFragmentImage(qrcode.image.base.BaseImage):
         A box_size of 10 (default) equals 1mm.
         """
         units = Decimal(pixels) / 10
-        if not text:
-            return units
-        return '%smm' % units
+        return f'{units}mm' if text else units
 
     def save(self, stream, kind=None):
         self.check_kind(kind=kind)
